@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+  <!-- Background -->
+  <rect x="0" y="0" width="800" height="500" rx="8" fill="#f8fafc"/>
+  
+  <!-- Header -->
+  <rect x="0" y="0" width="800" height="60" fill="#1e40af"/>
+  <text x="30" y="38" fill="white" font-family="Arial" font-size="20" font-weight="bold">📊 Treasury Yield Dashboard</text>
+  <text x="650" y="38" fill="#93c5fd" font-family="Arial" font-size="12">Last updated: Feb 4, 2026</text>
+  
+  <!-- Metric cards -->
+  <rect x="20" y="80" width="240" height="100" rx="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="40" y="110" fill="#64748b" font-family="Arial" font-size="12">10-YEAR TREASURY</text>
+  <text x="40" y="150" fill="#1e293b" font-family="Arial" font-size="36" font-weight="bold">4.25%</text>
+  <text x="160" y="150" fill="#22c55e" font-family="Arial" font-size="14">▲ +5bp</text>
+  
+  <rect x="280" y="80" width="240" height="100" rx="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="300" y="110" fill="#64748b" font-family="Arial" font-size="12">2-YEAR TREASURY</text>
+  <text x="300" y="150" fill="#1e293b" font-family="Arial" font-size="36" font-weight="bold">4.10%</text>
+  <text x="420" y="150" fill="#ef4444" font-family="Arial" font-size="14">▼ -3bp</text>
+  
+  <rect x="540" y="80" width="240" height="100" rx="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="560" y="110" fill="#64748b" font-family="Arial" font-size="12">YIELD SPREAD</text>
+  <text x="560" y="150" fill="#1e293b" font-family="Arial" font-size="36" font-weight="bold">+15bp</text>
+  <rect x="680" y="130" width="70" height="24" rx="4" fill="#dcfce7"/>
+  <text x="715" y="147" text-anchor="middle" fill="#16a34a" font-family="Arial" font-size="11" font-weight="bold">NORMAL</text>
+  
+  <!-- Chart area -->
+  <rect x="20" y="200" width="500" height="280" rx="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="40" y="230" fill="#1e293b" font-family="Arial" font-size="14" font-weight="bold">12-Month Yield Curve Trend</text>
+  
+  <!-- Chart grid -->
+  <line x1="60" y1="260" x2="60" y2="440" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="60" y1="440" x2="480" y2="440" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="60" y1="300" x2="480" y2="300" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+  <line x1="60" y1="350" x2="480" y2="350" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+  <line x1="60" y1="400" x2="480" y2="400" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+  
+  <!-- Y-axis labels -->
+  <text x="50" y="265" text-anchor="end" fill="#64748b" font-family="Arial" font-size="10">5.0%</text>
+  <text x="50" y="305" text-anchor="end" fill="#64748b" font-family="Arial" font-size="10">4.5%</text>
+  <text x="50" y="355" text-anchor="end" fill="#64748b" font-family="Arial" font-size="10">4.0%</text>
+  <text x="50" y="405" text-anchor="end" fill="#64748b" font-family="Arial" font-size="10">3.5%</text>
+  <text x="50" y="445" text-anchor="end" fill="#64748b" font-family="Arial" font-size="10">3.0%</text>
+  
+  <!-- X-axis labels -->
+  <text x="95" y="460" fill="#64748b" font-family="Arial" font-size="10">Mar</text>
+  <text x="165" y="460" fill="#64748b" font-family="Arial" font-size="10">May</text>
+  <text x="235" y="460" fill="#64748b" font-family="Arial" font-size="10">Jul</text>
+  <text x="305" y="460" fill="#64748b" font-family="Arial" font-size="10">Sep</text>
+  <text x="375" y="460" fill="#64748b" font-family="Arial" font-size="10">Nov</text>
+  <text x="445" y="460" fill="#64748b" font-family="Arial" font-size="10">Jan</text>
+  
+  <!-- 10Y line (blue) -->
+  <polyline points="80,380 120,375 160,360 200,340 240,335 280,350 320,345 360,330 400,320 440,315 480,310" 
+            fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- 2Y line (orange) -->
+  <polyline points="80,390 120,385 160,375 200,360 240,355 280,365 320,360 360,350 400,340 440,335 480,325" 
+            fill="none" stroke="#f97316" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Legend -->
+  <line x1="320" y1="230" x2="350" y2="230" stroke="#2563eb" stroke-width="3"/>
+  <text x="360" y="234" fill="#1e293b" font-family="Arial" font-size="11">10Y Treasury</text>
+  <line x1="440" y1="230" x2="470" y2="230" stroke="#f97316" stroke-width="3"/>
+  <text x="480" y="234" fill="#1e293b" font-family="Arial" font-size="11">2Y Treasury</text>
+  
+  <!-- Side panel -->
+  <rect x="540" y="200" width="240" height="280" rx="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="560" y="230" fill="#1e293b" font-family="Arial" font-size="14" font-weight="bold">Key Insights</text>
+  
+  <rect x="555" y="250" width="210" height="50" rx="4" fill="#f0fdf4"/>
+  <text x="570" y="270" fill="#16a34a" font-family="Arial" font-size="11" font-weight="bold">✓ Yield Curve Normal</text>
+  <text x="570" y="288" fill="#64748b" font-family="Arial" font-size="10">Positive spread indicates growth</text>
+  
+  <rect x="555" y="310" width="210" height="50" rx="4" fill="#fef3c7"/>
+  <text x="570" y="330" fill="#d97706" font-family="Arial" font-size="11" font-weight="bold">⚠ Rate Volatility</text>
+  <text x="570" y="348" fill="#64748b" font-family="Arial" font-size="10">10Y moved +25bp this month</text>
+  
+  <rect x="555" y="370" width="210" height="50" rx="4" fill="#eff6ff"/>
+  <text x="570" y="390" fill="#2563eb" font-family="Arial" font-size="11" font-weight="bold">📈 Trend: Rising</text>
+  <text x="570" y="408" fill="#64748b" font-family="Arial" font-size="10">Both yields up from 6mo avg</text>
+  
+  <rect x="555" y="430" width="210" height="35" rx="4" fill="#1e40af"/>
+  <text x="660" y="453" text-anchor="middle" fill="white" font-family="Arial" font-size="12" font-weight="bold">Export Report →</text>
+</svg>

@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train the Trainer: AI Coding Assistants for Treasury</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #22c55e;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            display: none;
+        }
+        .toast.show { display: block; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Screenshot gallery */
+        .screenshot-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .screenshot-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .screenshot-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .screenshot-card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .screenshot-card .card-content {
+            padding: 1rem;
+        }
+        .screenshot-card h4 {
+            margin: 0 0 0.5rem 0;
+            color: #1e293b;
+        }
+        .screenshot-card p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        /* Copy button */
+        .copy-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+        .copy-btn:hover { background: #1d4ed8; }
+        .copy-btn.copied { background: #22c55e; }
+        
+        /* Progress tracker */
+        .progress-tracker {
+            background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            color: white;
+        }
+        .progress-tracker h3 {
+            margin: 0 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .progress-bar-container {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        .progress-bar {
+            background: #22c55e;
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        .module-checks {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+        .module-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .module-check:hover { background: rgba(255,255,255,0.2); }
+        .module-check input { width: 18px; height: 18px; cursor: pointer; }
+        .module-check.completed { background: rgba(34, 197, 94, 0.3); }
+        
+        /* Interactive prompt box */
+        .prompt-box {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            position: relative;
+        }
+        .prompt-box pre {
+            margin: 0;
+            color: #e2e8f0;
+            white-space: pre-wrap;
+        }
+        .prompt-box .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+        }
+        
+        /* Windsurf link button */
+        .windsurf-btn {
+            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+        }
+        .windsurf-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+        
+        /* Expandable sections */
+        .expandable {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        .expandable-header {
+            background: #f8fafc;
+            padding: 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+        .expandable-header:hover { background: #f1f5f9; }
+        .expandable-content {
+            padding: 1rem;
+            display: none;
+            border-top: 1px solid #e2e8f0;
+        }
+        .expandable.open .expandable-content { display: block; }
+        .expandable-icon { transition: transform 0.2s; }
+        .expandable.open .expandable-icon { transform: rotate(180deg); }
+        
+        /* Interactive Tutorial Steps */
+        .tutorial-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin: 2rem 0;
+        }
+        .tutorial-header {
+            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+            color: white;
+            padding: 1.5rem;
+        }
+        .tutorial-header h3 { margin: 0; }
+        .tutorial-steps {
+            display: flex;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .tutorial-step-tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            font-weight: 500;
+            color: #64748b;
+        }
+        .tutorial-step-tab:hover { background: #f8fafc; }
+        .tutorial-step-tab.active {
+            border-bottom-color: #2563eb;
+            color: #2563eb;
+            background: #eff6ff;
+        }
+        .tutorial-step-tab.completed {
+            color: #22c55e;
+        }
+        .tutorial-step-tab.completed::before {
+            content: '✓ ';
+        }
+        .tutorial-content {
+            padding: 2rem;
+        }
+        .step-panel { display: none; }
+        .step-panel.active { display: block; }
+        .step-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        /* Quiz styles */
+        .quiz-container {
+            background: #faf5ff;
+            border: 2px solid #c4b5fd;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .quiz-question {
+            font-weight: 600;
+            color: #5b21b6;
+            margin-bottom: 1rem;
+        }
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .quiz-option {
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+        .quiz-option:hover { border-color: #a78bfa; background: #faf5ff; }
+        .quiz-option.selected { border-color: #7c3aed; background: #ede9fe; }
+        .quiz-option.correct { border-color: #22c55e; background: #dcfce7; }
+        .quiz-option.incorrect { border-color: #ef4444; background: #fee2e2; }
+        .quiz-feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+        }
+        .quiz-feedback.show { display: block; }
+        .quiz-feedback.correct { background: #dcfce7; color: #166534; }
+        .quiz-feedback.incorrect { background: #fee2e2; color: #991b1b; }
+        
+        /* Code playground */
+        .code-playground {
+            background: #1e293b;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+        }
+        .playground-header {
+            background: #0f172a;
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .playground-title {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .playground-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .playground-btn {
+            background: #334155;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.2s;
+        }
+        .playground-btn:hover { background: #475569; }
+        .playground-btn.primary { background: #2563eb; }
+        .playground-btn.primary:hover { background: #1d4ed8; }
+        .playground-editor {
+            padding: 1rem;
+            min-height: 150px;
+        }
+        .playground-editor textarea {
+            width: 100%;
+            min-height: 120px;
+            background: transparent;
+            border: none;
+            color: #e2e8f0;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            resize: vertical;
+            outline: none;
+        }
+        .playground-output {
+            background: #0f172a;
+            padding: 1rem;
+            border-top: 1px solid #334155;
+            color: #22c55e;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            min-height: 60px;
+        }
+        
+        /* Simulation mode */
+        .simulation-panel {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            color: white;
+        }
+        .simulation-panel h4 {
+            margin: 0 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .simulation-chat {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .sim-message {
+            margin-bottom: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .sim-message.user {
+            text-align: right;
+        }
+        .sim-message .bubble {
+            display: inline-block;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            max-width: 80%;
+        }
+        .sim-message.user .bubble {
+            background: #2563eb;
+        }
+        .sim-message.ai .bubble {
+            background: rgba(255,255,255,0.1);
+            text-align: left;
+        }
+        .sim-message .sender {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-bottom: 4px;
+        }
+        .sim-input-area {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .sim-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+        .sim-send {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .sim-send:hover { background: #16a34a; }
+        
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 0.5rem;
+        }
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #64ffda;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+        .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        /* Hint system */
+        .hint-btn {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .hint-btn:hover { background: #d97706; }
+        .hint-content {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 0 8px 8px 0;
+            display: none;
+        }
+        .hint-content.show { display: block; }
+        
+        /* Timer */
+        .timer-widget {
+            background: #1e293b;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Consolas', monospace;
+        }
+        .timer-widget.running { background: #166534; }
+        .timer-widget.paused { background: #854d0e; }
+    </style>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .nav {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .nav a {
+            color: var(--primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        
+        .nav a:hover {
+            background: var(--bg);
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .content {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem 3rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .content h1 {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 0.5rem;
+            margin: 2rem 0 1rem 0;
+        }
+        
+        .content h2 {
+            color: var(--text);
+            margin: 2rem 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .content h3 {
+            color: var(--text);
+            margin: 1.5rem 0 0.75rem 0;
+        }
+        
+        .content h4 {
+            color: var(--text-muted);
+            margin: 1rem 0 0.5rem 0;
+        }
+        
+        .content p {
+            margin: 1rem 0;
+        }
+        
+        .content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+        
+        .content th {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .content td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .content tr:nth-child(even) {
+            background: var(--bg);
+        }
+        
+        .content tr:hover {
+            background: #f1f5f9;
+        }
+        
+        .content code {
+            background: #f1f5f9;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+        }
+        
+        .content pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        .content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+        
+        .content ul, .content ol {
+            margin: 1rem 0;
+            padding-left: 2rem;
+        }
+        
+        .content li {
+            margin: 0.5rem 0;
+        }
+        
+        .content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        
+        .content strong {
+            color: var(--text);
+        }
+        
+        .content hr {
+            border: none;
+            border-top: 2px solid var(--border);
+            margin: 2rem 0;
+        }
+        
+        .content input[type="checkbox"] {
+            margin-right: 0.5rem;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .content {
+                padding: 1.5rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .nav {
+                padding: 0.75rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎓 Train the Trainer</h1>
+        <p>AI Coding Assistants for Treasury Professionals</p>
+    </div>
+    
+    <nav class="nav">
+        <a href="#executive-summary">Summary</a>
+        <a href="#course-overview">Overview</a>
+        <a href="#module-structure">Modules</a>
+        <a href="#best-practices">Best Practices</a>
+        <a href="#troubleshooting-guide">Troubleshooting</a>
+        <a href="#appendices">Appendices</a>
+    </nav>
+    
+    <div class="container">
+        <!-- Progress Tracker -->
+        <div class="progress-tracker" id="progressTracker">
+            <h3>📊 Your Progress</h3>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+            </div>
+            <div class="module-checks">
+                <label class="module-check" data-module="1">
+                    <input type="checkbox" onchange="updateProgress()"> Module 1: Fundamentals
+                </label>
+                <label class="module-check" data-module="2">
+                    <input type="checkbox" onchange="updateProgress()"> Module 2: Cash Mgmt
+                </label>
+                <label class="module-check" data-module="3">
+                    <input type="checkbox" onchange="updateProgress()"> Module 3: Debt Analysis
+                </label>
+                <label class="module-check" data-module="4">
+                    <input type="checkbox" onchange="updateProgress()"> Module 4: Peer Analysis
+                </label>
+                <label class="module-check" data-module="5">
+                    <input type="checkbox" onchange="updateProgress()"> Module 5: Automation
+                </label>
+                <label class="module-check" data-module="6">
+                    <input type="checkbox" onchange="updateProgress()"> Module 6: Best Practices
+                </label>
+            </div>
+        </div>
+
+        <!-- Screenshot Gallery -->
+        <h2 style="margin-top: 2rem; color: #1e293b;">🖼️ What You'll Build</h2>
+        <div class="screenshot-gallery">
+            <div class="screenshot-card">
+                <img src="images/cascade-interface.svg" alt="Cascade Interface">
+                <div class="card-content">
+                    <h4>Cascade AI Chat</h4>
+                    <p>Learn to use Windsurf's AI assistant for interactive coding and analysis</p>
+                </div>
+            </div>
+            <div class="screenshot-card">
+                <img src="images/flows-interface.svg" alt="Flows Interface">
+                <div class="card-content">
+                    <h4>Automated Flows</h4>
+                    <p>Create scheduled workflows that run automatically</p>
+                </div>
+            </div>
+            <div class="screenshot-card">
+                <img src="images/dashboard-example.svg" alt="Dashboard Example">
+                <div class="card-content">
+                    <h4>Treasury Dashboard</h4>
+                    <p>Build real-time yield curve and metrics dashboards</p>
+                </div>
+            </div>
+            <div class="screenshot-card">
+                <img src="images/peer-comparison.svg" alt="Peer Comparison">
+                <div class="card-content">
+                    <h4>Peer Group Analyzer</h4>
+                    <p>Compare banks, tech companies, and financials</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Start Prompts -->
+        <h2 style="margin-top: 2rem; color: #1e293b;">🚀 Quick Start Prompts</h2>
+        <p style="color: #64748b; margin-bottom: 1rem;">Click to copy, then paste into Windsurf Cascade</p>
+        
+        <div class="prompt-box">
+            <button class="copy-btn" onclick="copyPrompt(this, 'prompt1')">📋 Copy</button>
+            <pre id="prompt1">Help me create a PRD.md for a Treasury cash forecasting tool that uses only public APIs like FRED and Yahoo Finance.</pre>
+        </div>
+        
+        <div class="prompt-box">
+            <button class="copy-btn" onclick="copyPrompt(this, 'prompt2')">📋 Copy</button>
+            <pre id="prompt2">Create a Python dashboard that fetches 10-year and 2-year Treasury yields from FRED, calculates the spread, and displays a 12-month chart with current values.</pre>
+        </div>
+        
+        <div class="prompt-box">
+            <button class="copy-btn" onclick="copyPrompt(this, 'prompt3')">📋 Copy</button>
+            <pre id="prompt3">Build a Streamlit app that compares JPM, GS, BAC, C, and WFC on Market Cap, ROE, P/E, and Dividend Yield using yfinance. Include a bar chart and CSV export.</pre>
+        </div>
+
+        <!-- Morning Report Example -->
+        <h2 style="margin-top: 2rem; color: #1e293b;">📄 Sample Output: Morning Report</h2>
+        <img src="images/morning-report.svg" alt="Morning Report" style="width: 100%; max-width: 800px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin: 1rem 0;">
+
+        <!-- Interactive Tutorial -->
+        <div class="tutorial-container">
+            <div class="tutorial-header">
+                <h3>🎯 Interactive Exercise: Build Your First PRD</h3>
+                <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Follow along step-by-step to create a Treasury PRD using Windsurf</p>
+            </div>
+            <div class="tutorial-steps">
+                <div class="tutorial-step-tab active" onclick="showStep(1)">1. Setup</div>
+                <div class="tutorial-step-tab" onclick="showStep(2)">2. First Prompt</div>
+                <div class="tutorial-step-tab" onclick="showStep(3)">3. Iterate</div>
+                <div class="tutorial-step-tab" onclick="showStep(4)">4. Refine</div>
+                <div class="tutorial-step-tab" onclick="showStep(5)">5. Complete</div>
+            </div>
+            <div class="tutorial-content">
+                <div class="step-panel active" id="step1">
+                    <h4>Step 1: Open Windsurf & Start a New Project</h4>
+                    <p>Launch Windsurf and set up a workspace for your Treasury project.</p>
+                    <ol>
+                        <li>Open <strong>Windsurf</strong> application</li>
+                        <li>Click <strong>File → Open Folder</strong> (or <kbd>Ctrl+K Ctrl+O</kbd>)</li>
+                        <li>Create a new folder called <code>treasury-tools</code> and select it</li>
+                        <li>The <strong>Cascade</strong> panel should appear on the right side automatically</li>
+                        <li>If not visible, click the <strong>Cascade icon</strong> in the sidebar or press <kbd>Ctrl+Shift+L</kbd></li>
+                    </ol>
+                    <div class="step-actions">
+                        <button class="windsurf-btn" onclick="markStepComplete(1); showStep(2);">
+                            ✓ I've done this → Next Step
+                        </button>
+                        <button class="hint-btn" onclick="toggleHint('hint1')">💡 Show Hint</button>
+                    </div>
+                    <div class="hint-content" id="hint1">
+                        <strong>Tip:</strong> Cascade is Windsurf's AI assistant panel. It appears on the right side of the IDE. You can also start a conversation by typing directly in the chat input at the bottom of the Cascade panel. If you're in an existing project, you can use that instead of creating a new folder.
+                    </div>
+                </div>
+                
+                <div class="step-panel" id="step2">
+                    <h4>Step 2: Write Your First Prompt</h4>
+                    <p>Now let's ask Cascade to create a PRD. Copy this prompt and paste it into Cascade:</p>
+                    <div class="prompt-box">
+                        <button class="copy-btn" onclick="copyPrompt(this, 'tutorialPrompt1')">📋 Copy</button>
+                        <pre id="tutorialPrompt1">Help me create a PRD.md file for a Treasury cash position dashboard. 
+Include sections for:
+- Executive Summary
+- Requirements
+- Data Sources (use only public APIs)
+- Success Metrics</pre>
+                    </div>
+                    <div class="step-actions">
+                        <button class="windsurf-btn" onclick="markStepComplete(2); showStep(3);">
+                            ✓ I've sent the prompt → Next Step
+                        </button>
+                        <button class="hint-btn" onclick="toggleHint('hint2')">💡 Show Hint</button>
+                    </div>
+                    <div class="hint-content" id="hint2">
+                        <strong>Best Practice:</strong> Notice how we're being specific about what sections we want. Vague prompts like "make a PRD" give unpredictable results. Always list your requirements clearly.
+                    </div>
+                </div>
+                
+                <div class="step-panel" id="step3">
+                    <h4>Step 3: Iterate on the Response</h4>
+                    <p>Cascade will generate a PRD. Now let's improve it by adding more detail:</p>
+                    <div class="prompt-box">
+                        <button class="copy-btn" onclick="copyPrompt(this, 'tutorialPrompt2')">📋 Copy</button>
+                        <pre id="tutorialPrompt2">Great! Now add these improvements:
+1. Add a table showing which FRED API series to use for Treasury yields
+2. Include a wireframe description of the dashboard layout
+3. Add acceptance criteria for each requirement</pre>
+                    </div>
+                    <div class="step-actions">
+                        <button class="windsurf-btn" onclick="markStepComplete(3); showStep(4);">
+                            ✓ I've iterated → Next Step
+                        </button>
+                        <button class="hint-btn" onclick="toggleHint('hint3')">💡 Show Hint</button>
+                    </div>
+                    <div class="hint-content" id="hint3">
+                        <strong>Key Insight:</strong> This is the "iterate in small steps" principle. Don't try to get everything perfect in one prompt. Build incrementally and validate each piece.
+                    </div>
+                </div>
+                
+                <div class="step-panel" id="step4">
+                    <h4>Step 4: Refine and Polish</h4>
+                    <p>Let's add the finishing touches:</p>
+                    <div class="prompt-box">
+                        <button class="copy-btn" onclick="copyPrompt(this, 'tutorialPrompt3')">📋 Copy</button>
+                        <pre id="tutorialPrompt3">Final refinements:
+1. Add a "Non-Goals" section to clarify scope
+2. Include estimated timeline with milestones
+3. Format all tables consistently
+4. Save the file as PRD.md in the current folder</pre>
+                    </div>
+                    <div class="step-actions">
+                        <button class="windsurf-btn" onclick="markStepComplete(4); showStep(5);">
+                            ✓ PRD is saved → Next Step
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="step-panel" id="step5">
+                    <h4>🎉 Congratulations!</h4>
+                    <p>You've successfully created your first PRD using Windsurf Cascade!</p>
+                    <div style="background: #dcfce7; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                        <strong>What you learned:</strong>
+                        <ul style="margin: 0.5rem 0 0 1rem;">
+                            <li>How to structure clear, specific prompts</li>
+                            <li>The importance of iterating in small steps</li>
+                            <li>How to refine AI output to match your needs</li>
+                        </ul>
+                    </div>
+                    <div class="step-actions">
+                        <button class="windsurf-btn" onclick="resetTutorial()">🔄 Restart Tutorial</button>
+                        <button class="copy-btn" onclick="markStepComplete(5)">✓ Mark Module Complete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cascade Simulator -->
+        <h2 style="margin-top: 2rem; color: #1e293b;">🌊 Try Cascade Simulator</h2>
+        <p style="color: #64748b;">Practice prompting before using the real thing. Type a prompt and see a simulated response.</p>
+        
+        <div class="simulation-panel">
+            <h4>🌊 Cascade Simulator</h4>
+            <div class="simulation-chat" id="simChat">
+                <div class="sim-message ai">
+                    <div class="sender">Cascade</div>
+                    <div class="bubble">Hi! I'm a Cascade simulator. Try asking me to create something for Treasury, like a dashboard or report. I'll show you how I might respond.</div>
+                </div>
+            </div>
+            <div class="sim-input-area">
+                <input type="text" class="sim-input" id="simInput" placeholder="Try: Create a yield curve chart..." onkeypress="if(event.key==='Enter')sendSimMessage()">
+                <button class="sim-send" onclick="sendSimMessage()">Send</button>
+            </div>
+        </div>
+
+        <!-- Knowledge Quiz -->
+        <h2 style="margin-top: 2rem; color: #1e293b;">📝 Knowledge Check</h2>
+        
+        <div class="quiz-container" id="quiz1">
+            <div class="quiz-question">Q1: When should you restart a Cascade session instead of continuing to iterate?</div>
+            <div class="quiz-options">
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz1', false)">After every prompt to keep context fresh</div>
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz1', false)">When the code runs successfully</div>
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz1', true)">After 3+ failed attempts to fix the same error</div>
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz1', false)">Only when Windsurf crashes</div>
+            </div>
+            <div class="quiz-feedback" id="quiz1-feedback"></div>
+        </div>
+        
+        <div class="quiz-container" id="quiz2">
+            <div class="quiz-question">Q2: What's the best way to ask Cascade to create a table?</div>
+            <div class="quiz-options">
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz2', false)">"Make a table"</div>
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz2', true)">"Create a table with 5 columns: Company, Revenue, Profit, ROE, and P/E ratio"</div>
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz2', false)">"Table please"</div>
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz2', false)">"I need data organized somehow"</div>
+            </div>
+            <div class="quiz-feedback" id="quiz2-feedback"></div>
+        </div>
+        
+        <div class="quiz-container" id="quiz3">
+            <div class="quiz-question">Q3: When should you use Flows instead of Cascade?</div>
+            <div class="quiz-options">
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz3', false)">For one-time exploratory tasks</div>
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz3', false)">When you need to chat interactively</div>
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz3', true)">For repeatable, scheduled multi-step processes</div>
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz3', false)">Flows and Cascade are the same thing</div>
+            </div>
+            <div class="quiz-feedback" id="quiz3-feedback"></div>
+        </div>
+
+        <!-- Code Playground -->
+        <h2 style="margin-top: 2rem; color: #1e293b;">🧪 Prompt Playground</h2>
+        <p style="color: #64748b;">Practice writing prompts. Edit the template below and see tips for improvement.</p>
+        
+        <div class="code-playground">
+            <div class="playground-header">
+                <div class="playground-title">
+                    <span>📝</span> Prompt Editor
+                </div>
+                <div class="playground-actions">
+                    <button class="playground-btn" onclick="resetPlayground()">Reset</button>
+                    <button class="playground-btn primary" onclick="analyzePrompt()">Analyze Prompt</button>
+                </div>
+            </div>
+            <div class="playground-editor">
+                <textarea id="playgroundInput">Create a dashboard for Treasury</textarea>
+            </div>
+            <div class="playground-output" id="playgroundOutput">
+                Click "Analyze Prompt" to get feedback on your prompt...
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content" id="content">
+            Loading...
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">✓ Copied to clipboard!</div>
+    
+    <div class="footer">
+        © 2026 | Train the Trainer Program | Public Domain — Free to use and modify
+    </div>
+    
+    <script>
+        // Load and render markdown
+        fetch('PRD.md')
+            .then(response => response.text())
+            .then(markdown => {
+                document.getElementById('content').innerHTML = marked.parse(markdown);
+            })
+            .catch(error => {
+                document.getElementById('content').innerHTML = '<p>Error loading content. Please ensure PRD.md is in the same directory.</p>';
+            });
+        
+        // Copy prompt to clipboard
+        function copyPrompt(btn, promptId) {
+            const text = document.getElementById(promptId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                btn.classList.add('copied');
+                btn.innerHTML = '✓ Copied!';
+                showToast();
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = '📋 Copy';
+                }, 2000);
+            });
+        }
+        
+        // Show toast notification
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+        
+        // Update progress bar
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('.module-check input');
+            const checked = document.querySelectorAll('.module-check input:checked').length;
+            const percent = (checked / checkboxes.length) * 100;
+            document.getElementById('progressBar').style.width = percent + '%';
+            
+            // Update visual state
+            checkboxes.forEach(cb => {
+                const label = cb.closest('.module-check');
+                if (cb.checked) {
+                    label.classList.add('completed');
+                } else {
+                    label.classList.remove('completed');
+                }
+            });
+            
+            // Save to localStorage
+            const progress = Array.from(checkboxes).map(cb => cb.checked);
+            localStorage.setItem('courseProgress', JSON.stringify(progress));
+        }
+        
+        // Load saved progress
+        function loadProgress() {
+            const saved = localStorage.getItem('courseProgress');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                const checkboxes = document.querySelectorAll('.module-check input');
+                checkboxes.forEach((cb, i) => {
+                    if (progress[i]) {
+                        cb.checked = true;
+                    }
+                });
+                updateProgress();
+            }
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', loadProgress);
+        
+        // Tutorial step navigation
+        function showStep(stepNum) {
+            // Hide all panels
+            document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tutorial-step-tab').forEach(t => t.classList.remove('active'));
+            
+            // Show selected
+            document.getElementById('step' + stepNum).classList.add('active');
+            document.querySelectorAll('.tutorial-step-tab')[stepNum - 1].classList.add('active');
+        }
+        
+        function markStepComplete(stepNum) {
+            const tab = document.querySelectorAll('.tutorial-step-tab')[stepNum - 1];
+            tab.classList.add('completed');
+            
+            // Save to localStorage
+            let completed = JSON.parse(localStorage.getItem('tutorialSteps') || '[]');
+            if (!completed.includes(stepNum)) {
+                completed.push(stepNum);
+                localStorage.setItem('tutorialSteps', JSON.stringify(completed));
+            }
+            
+            showToast();
+        }
+        
+        function resetTutorial() {
+            localStorage.removeItem('tutorialSteps');
+            document.querySelectorAll('.tutorial-step-tab').forEach(t => t.classList.remove('completed'));
+            showStep(1);
+        }
+        
+        function toggleHint(hintId) {
+            const hint = document.getElementById(hintId);
+            hint.classList.toggle('show');
+        }
+        
+        // Quiz functionality
+        function checkAnswer(option, quizId, isCorrect) {
+            const container = document.getElementById(quizId);
+            const options = container.querySelectorAll('.quiz-option');
+            const feedback = document.getElementById(quizId + '-feedback');
+            
+            // Reset all options
+            options.forEach(o => {
+                o.classList.remove('selected', 'correct', 'incorrect');
+            });
+            
+            // Mark selected
+            option.classList.add('selected');
+            option.classList.add(isCorrect ? 'correct' : 'incorrect');
+            
+            // Show feedback
+            feedback.classList.add('show');
+            feedback.classList.remove('correct', 'incorrect');
+            
+            if (isCorrect) {
+                feedback.classList.add('correct');
+                feedback.innerHTML = '✓ Correct! ' + getQuizExplanation(quizId, true);
+            } else {
+                feedback.classList.add('incorrect');
+                feedback.innerHTML = '✗ Not quite. ' + getQuizExplanation(quizId, false);
+            }
+        }
+        
+        function getQuizExplanation(quizId, isCorrect) {
+            const explanations = {
+                'quiz1': {
+                    correct: 'After 3+ failed attempts, the context may be corrupted. Starting fresh with a clearer prompt often works better.',
+                    incorrect: 'Remember the "3 strikes" rule: if the same error persists after 3 attempts, restart with a fresh session and simplified requirements.'
+                },
+                'quiz2': {
+                    correct: 'Specific prompts with exact column names give predictable, useful results.',
+                    incorrect: 'Vague prompts lead to unpredictable output. Always specify exactly what you need.'
+                },
+                'quiz3': {
+                    correct: 'Flows are designed for automation - tasks that run on a schedule or need to be repeated consistently.',
+                    incorrect: 'Cascade is for interactive, one-time tasks. Flows are for automated, repeatable workflows.'
+                }
+            };
+            return explanations[quizId][isCorrect ? 'correct' : 'incorrect'];
+        }
+        
+        // Cascade Simulator
+        const simResponses = {
+            'dashboard': `I'll create a Treasury dashboard for you. Here's my plan:
+
+1. **Fetch Data**: Use FRED API for Treasury yields (DGS10, DGS2)
+2. **Calculate Metrics**: Yield spread, daily changes
+3. **Build UI**: Cards for key metrics, line chart for trends
+4. **Add Interactivity**: Date range selector, export button
+
+Should I proceed with creating the Python code using Streamlit?`,
+            
+            'chart': `I'll create a yield curve chart. Here's what I'll build:
+
+\`\`\`python
+import yfinance as yf
+import matplotlib.pyplot as plt
+
+# Fetch Treasury yields
+# Plot 10Y vs 2Y over time
+# Add spread indicator
+\`\`\`
+
+The chart will show the last 12 months of data with clear legends. Want me to add any specific features?`,
+            
+            'report': `I'll generate a Treasury morning report. The report will include:
+
+📊 **Key Metrics Table**
+- 10Y and 2Y Treasury yields
+- Yield curve spread
+- S&P 500 level
+
+📈 **Bank Stock Summary**
+- JPM, GS, BAC, C, WFC prices and changes
+
+⚠️ **Alerts**
+- Notable moves (>1% change)
+
+Should I save this as .txt, .html, or both?`,
+            
+            'prd': `I'll help you create a PRD.md file. Let me structure it:
+
+# Product Requirements Document
+
+## 1. Executive Summary
+[Brief overview of the project]
+
+## 2. Goals & Objectives
+[What success looks like]
+
+## 3. Requirements
+[Detailed feature list]
+
+## 4. Data Sources
+[APIs and data feeds]
+
+## 5. Success Metrics
+[How to measure ROI]
+
+What specific Treasury tool is this PRD for?`,
+            
+            'default': `I understand you want to work on something for Treasury. To give you the best help, could you be more specific? For example:
+
+- "Create a **dashboard** showing Treasury yields"
+- "Build a **report** for daily briefings"  
+- "Make a **chart** comparing bank stocks"
+- "Write a **PRD** for a cash forecasting tool"
+
+What would you like to create?`
+        };
+        
+        function sendSimMessage() {
+            const input = document.getElementById('simInput');
+            const chat = document.getElementById('simChat');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            chat.innerHTML += `
+                <div class="sim-message user">
+                    <div class="sender">You</div>
+                    <div class="bubble">${escapeHtml(message)}</div>
+                </div>
+            `;
+            
+            input.value = '';
+            
+            // Add typing indicator
+            chat.innerHTML += `
+                <div class="sim-message ai" id="typing">
+                    <div class="sender">Cascade</div>
+                    <div class="bubble">
+                        <div class="typing-indicator">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            chat.scrollTop = chat.scrollHeight;
+            
+            // Simulate response delay
+            setTimeout(() => {
+                document.getElementById('typing').remove();
+                
+                // Determine response based on keywords
+                let response = simResponses.default;
+                const lowerMsg = message.toLowerCase();
+                
+                if (lowerMsg.includes('dashboard')) response = simResponses.dashboard;
+                else if (lowerMsg.includes('chart') || lowerMsg.includes('yield')) response = simResponses.chart;
+                else if (lowerMsg.includes('report') || lowerMsg.includes('briefing')) response = simResponses.report;
+                else if (lowerMsg.includes('prd') || lowerMsg.includes('requirements')) response = simResponses.prd;
+                
+                chat.innerHTML += `
+                    <div class="sim-message ai">
+                        <div class="sender">Cascade</div>
+                        <div class="bubble">${response.replace(/\n/g, '<br>')}</div>
+                    </div>
+                `;
+                
+                chat.scrollTop = chat.scrollHeight;
+            }, 1500);
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Prompt Playground
+        function analyzePrompt() {
+            const input = document.getElementById('playgroundInput').value;
+            const output = document.getElementById('playgroundOutput');
+            
+            let score = 0;
+            let feedback = [];
+            
+            // Check for specificity
+            if (input.length > 50) {
+                score += 20;
+                feedback.push('✓ Good length - detailed prompts work better');
+            } else {
+                feedback.push('⚠ Too short - add more details about what you need');
+            }
+            
+            // Check for structure keywords
+            if (input.includes('1.') || input.includes('-') || input.includes('•')) {
+                score += 20;
+                feedback.push('✓ Uses lists - structured prompts are clearer');
+            } else {
+                feedback.push('💡 Tip: Use numbered lists or bullet points for multiple requirements');
+            }
+            
+            // Check for data source mention
+            if (input.toLowerCase().includes('fred') || input.toLowerCase().includes('yahoo') || 
+                input.toLowerCase().includes('api') || input.toLowerCase().includes('public')) {
+                score += 20;
+                feedback.push('✓ Specifies data source - helps AI choose the right approach');
+            } else {
+                feedback.push('💡 Tip: Mention data sources (e.g., "use FRED API" or "public data only")');
+            }
+            
+            // Check for output format
+            if (input.toLowerCase().includes('table') || input.toLowerCase().includes('chart') || 
+                input.toLowerCase().includes('dashboard') || input.toLowerCase().includes('report')) {
+                score += 20;
+                feedback.push('✓ Specifies output format - AI knows what to build');
+            } else {
+                feedback.push('💡 Tip: Specify the output format (table, chart, dashboard, etc.)');
+            }
+            
+            // Check for metrics/columns
+            if (input.toLowerCase().includes('column') || input.toLowerCase().includes('metric') ||
+                input.match(/\d+/) || input.includes('%')) {
+                score += 20;
+                feedback.push('✓ Includes specific metrics - reduces ambiguity');
+            } else {
+                feedback.push('💡 Tip: List specific metrics or columns you need');
+            }
+            
+            // Generate output
+            let scoreColor = score >= 80 ? '#22c55e' : score >= 50 ? '#f59e0b' : '#ef4444';
+            let scoreLabel = score >= 80 ? 'Excellent!' : score >= 50 ? 'Good, but could improve' : 'Needs more detail';
+            
+            output.innerHTML = `
+                <div style="margin-bottom: 1rem;">
+                    <span style="color: ${scoreColor}; font-size: 1.2rem; font-weight: bold;">
+                        Prompt Score: ${score}/100 - ${scoreLabel}
+                    </span>
+                </div>
+                <div style="color: #94a3b8;">
+                    ${feedback.join('<br>')}
+                </div>
+            `;
+        }
+        
+        function resetPlayground() {
+            document.getElementById('playgroundInput').value = 'Create a dashboard for Treasury';
+            document.getElementById('playgroundOutput').innerHTML = 'Click "Analyze Prompt" to get feedback on your prompt...';
+        }
+        
+        // Load saved tutorial progress
+        function loadTutorialProgress() {
+            const completed = JSON.parse(localStorage.getItem('tutorialSteps') || '[]');
+            completed.forEach(stepNum => {
+                const tab = document.querySelectorAll('.tutorial-step-tab')[stepNum - 1];
+                if (tab) tab.classList.add('completed');
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', loadTutorialProgress);
+    </script>
+</body>
+</html>
