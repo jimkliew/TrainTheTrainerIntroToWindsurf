@@ -1,6 +1,6 @@
-# Train the Trainer: AI Coding Assistants for Financial Professional
+# Train the Trainer: AI Coding Assistant Training for Financial Professional
 
-A self-paced course that empowers students and finance professionals to become internal champions for AI coding assistants like Windsurf.
+A self-paced course that empowers students and financial professionals to become internal champions for AI coding assistants like Windsurf. Then train others in their organization on best practices using agentic coding tools. 
 
 ## 🎯 Course Overview
 
