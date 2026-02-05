@@ -8,7 +8,7 @@ A self-paced course that empowers students and financial professionals to become
 |-----------|--------|
 | **Duration** | ~4 hours (self-paced) |
 | **Format** | Mixed: conceptual + hands-on exercises |
-| **Audience** | Treasury executives who will train others |
+| **Audience** | Finance leaders / executives who will train others |
 | **Data Sources** | Public only (FRED, Yahoo Finance) |
 
 ## 📚 Modules
@@ -75,7 +75,7 @@ The course teaches you to build:
 
 ## 📄 License
 
-Public Domain - Free to use and modify
+Public Domain - Free to use and modify 
 
 ---
 
