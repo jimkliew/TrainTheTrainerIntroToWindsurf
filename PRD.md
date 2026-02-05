@@ -1,4 +1,4 @@
-# Train the Trainer: AI Coding Assistants for Treasury Professionals
+# Train the Trainer: AI Coding Assistants Training for Financial Professionals
 
 ## Product Requirements Document (PRD)
 
@@ -23,7 +23,7 @@ This self-paced course empowers Treasury professionals to become internal champi
 
 | Attribute | Detail |
 |-----------|--------|
-| **Course Title** | Train the Trainer: AI Coding Assistants for Treasury |
+| **Course Title** | Train the Trainer: AI Coding Assistants Training for Financial Professionals |
 | **Duration** | ~4 hours (self-paced, variable by module) |
 | **Format** | Mixed: conceptual explanations + hands-on exercises |
 | **Prerequisites** | Basic Excel/data familiarity; no coding required |

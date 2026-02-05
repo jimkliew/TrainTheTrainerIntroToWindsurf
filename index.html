@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Train the Trainer: AI Coding Assistants for Treasury</title>
+    <title>Train the Trainer: AI Coding Assistants Training for Financial Professionals</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         /* Toast notification */
@@ -61,6 +61,122 @@
             margin: 0;
             color: #64748b;
             font-size: 0.9rem;
+        }
+        .screenshot-card-details {
+            padding: 1rem;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: none;
+        }
+        .screenshot-card.expanded .screenshot-card-details {
+            display: block;
+        }
+        .screenshot-card {
+            cursor: pointer;
+        }
+        .screenshot-card .expand-icon {
+            float: right;
+            color: #2563eb;
+            font-size: 1.2rem;
+            transition: transform 0.2s;
+        }
+        .screenshot-card.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+        .complexity-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .complexity-beginner {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .complexity-intermediate {
+            background: #fef3c7;
+            color: #854d0e;
+        }
+        .complexity-advanced {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #f1f5f9;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .modal-close:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+        .help-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-left: 8px;
+            transition: all 0.2s;
+            vertical-align: middle;
+        }
+        .help-btn:hover {
+            background: #1d4ed8;
+            transform: scale(1.1);
         }
         
         /* Copy button */
@@ -697,82 +813,190 @@
 <body>
     <div class="header">
         <h1>🎓 Train the Trainer</h1>
-        <p>AI Coding Assistants for Treasury Professionals</p>
+        <p>AI Coding Assistants Training for Financial Professionals</p>
     </div>
     
     <nav class="nav">
-        <a href="#executive-summary">Summary</a>
-        <a href="#course-overview">Overview</a>
-        <a href="#module-structure">Modules</a>
-        <a href="#best-practices">Best Practices</a>
-        <a href="#troubleshooting-guide">Troubleshooting</a>
-        <a href="#appendices">Appendices</a>
+        <a href="#what-you-can-build">What You Can Build</a>
+        <a href="#quick-start-prompts">Quick Start</a>
+        <a href="#interactive-tutorial">Interactive Tutorial</a>
+        <a href="#cascade-simulator">Cascade Simulator</a>
+        <a href="#prompt-playground">Prompt Playground</a>
+        <a href="#knowledge-check">Knowledge Check</a>
     </nav>
     
     <div class="container">
-        <!-- Progress Tracker -->
-        <div class="progress-tracker" id="progressTracker">
-            <h3>📊 Your Progress</h3>
-            <div class="progress-bar-container">
-                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
-            </div>
-            <div class="module-checks">
-                <label class="module-check" data-module="1">
-                    <input type="checkbox" onchange="updateProgress()"> Module 1: Fundamentals
-                </label>
-                <label class="module-check" data-module="2">
-                    <input type="checkbox" onchange="updateProgress()"> Module 2: Cash Mgmt
-                </label>
-                <label class="module-check" data-module="3">
-                    <input type="checkbox" onchange="updateProgress()"> Module 3: Debt Analysis
-                </label>
-                <label class="module-check" data-module="4">
-                    <input type="checkbox" onchange="updateProgress()"> Module 4: Peer Analysis
-                </label>
-                <label class="module-check" data-module="5">
-                    <input type="checkbox" onchange="updateProgress()"> Module 5: Automation
-                </label>
-                <label class="module-check" data-module="6">
-                    <input type="checkbox" onchange="updateProgress()"> Module 6: Best Practices
-                </label>
-            </div>
-        </div>
-
         <!-- Screenshot Gallery -->
-        <h2 style="margin-top: 2rem; color: #1e293b;">🖼️ What You'll Build</h2>
+        <h2 id="what-you-can-build" style="margin-top: 2rem; color: #1e293b;">🖼️ What You Can Build</h2>
+        <p style="color: #64748b; margin-bottom: 1rem;">Click on any card to see detailed information and PRD prompts</p>
         <div class="screenshot-gallery">
-            <div class="screenshot-card">
+            <div class="screenshot-card" onclick="toggleCard(this)">
                 <img src="images/cascade-interface.svg" alt="Cascade Interface">
                 <div class="card-content">
-                    <h4>Cascade AI Chat</h4>
+                    <h4>Cascade AI Chat <span class="expand-icon">▼</span></h4>
                     <p>Learn to use Windsurf's AI assistant for interactive coding and analysis</p>
                 </div>
+                <div class="screenshot-card-details">
+                    <span class="complexity-badge complexity-beginner">Beginner Friendly</span>
+                    <h5 style="margin: 0.5rem 0;">What This Is:</h5>
+                    <p style="margin-bottom: 1rem;">Cascade is Windsurf's AI coding assistant that helps you write code, debug issues, and build applications through natural language conversation. It's your starting point for all AI-assisted development.</p>
+                    
+                    <h5 style="margin: 1rem 0 0.5rem 0;">PRD Prompt to Get Started:</h5>
+                    <div class="prompt-box" style="margin-top: 0.5rem;">
+                        <button class="copy-btn" onclick="event.stopPropagation(); copyPrompt(this, 'cascadePRD')">📋 Copy</button>
+                        <pre id="cascadePRD">Create a PRD.md for a simple Cascade tutorial project that:
+1. Teaches users how to write effective prompts
+2. Shows how to iterate on AI responses
+3. Demonstrates the "3 strikes rule" for when to restart
+4. Includes 5 example prompts with explanations
+5. Uses only markdown formatting (no code required)
+
+Keep it beginner-friendly and focused on communication skills.</pre>
+                    </div>
+                    
+                    <h5 style="margin: 1rem 0 0.5rem 0;">Why This Works:</h5>
+                    <p style="font-size: 0.85rem; color: #64748b;">This prompt is specific about structure (5 sections), audience (beginners), and constraints (markdown only). It follows best practices by breaking down requirements clearly.</p>
+                </div>
             </div>
-            <div class="screenshot-card">
+            
+            <div class="screenshot-card" onclick="toggleCard(this)">
                 <img src="images/flows-interface.svg" alt="Flows Interface">
                 <div class="card-content">
-                    <h4>Automated Flows</h4>
+                    <h4>Automated Flows <span class="expand-icon">▼</span></h4>
                     <p>Create scheduled workflows that run automatically</p>
                 </div>
-            </div>
-            <div class="screenshot-card">
-                <img src="images/dashboard-example.svg" alt="Dashboard Example">
-                <div class="card-content">
-                    <h4>Treasury Dashboard</h4>
-                    <p>Build real-time yield curve and metrics dashboards</p>
+                <div class="screenshot-card-details">
+                    <span class="complexity-badge complexity-advanced">Advanced</span>
+                    <h5 style="margin: 0.5rem 0;">What This Is:</h5>
+                    <p style="margin-bottom: 1rem;">Flows automate repetitive tasks by running scripts on a schedule. Perfect for daily reports, data refreshes, or monitoring tasks. This is more advanced and requires understanding of scheduling and error handling.</p>
+                    
+                    <h5 style="margin: 1rem 0 0.5rem 0;">PRD Prompt to Get Started:</h5>
+                    <div class="prompt-box" style="margin-top: 0.5rem;">
+                        <button class="copy-btn" onclick="event.stopPropagation(); copyPrompt(this, 'flowsPRD')">📋 Copy</button>
+                        <pre id="flowsPRD">Create a PRD.md for an automated daily Treasury briefing Flow that:
+1. Runs every weekday at 7:00 AM EST
+2. Fetches Treasury yields from FRED (DGS10, DGS2)
+3. Fetches S&P 500 data from Yahoo Finance
+4. Generates a formatted report (text and HTML)
+5. Saves to a designated folder with date stamp
+6. Includes error handling and retry logic
+7. Uses environment variables for API keys
+
+Target: Treasury analysts who need morning market updates.
+Constraint: Must complete in under 2 minutes.</pre>
+                    </div>
+                    
+                    <h5 style="margin: 1rem 0 0.5rem 0;">Why This Works:</h5>
+                    <p style="font-size: 0.85rem; color: #64748b;">Specifies timing, data sources, output formats, and constraints. Includes error handling (best practice). However, this is advanced—start with simpler projects first.</p>
+                    
+                    <p style="margin-top: 1rem; padding: 0.75rem; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px; font-size: 0.85rem;">
+                        <strong>⚠️ Note:</strong> Flows require understanding of scheduling, error handling, and automation concepts. Complete the basic assignments first before attempting this.
+                    </p>
                 </div>
             </div>
-            <div class="screenshot-card">
+            
+            <div class="screenshot-card" onclick="toggleCard(this)">
+                <img src="images/dashboard-example.svg" alt="Dashboard Example">
+                <div class="card-content">
+                    <h4>Treasury Dashboard <span class="expand-icon">▼</span></h4>
+                    <p>Build real-time yield curve and metrics dashboards</p>
+                </div>
+                <div class="screenshot-card-details">
+                    <span class="complexity-badge complexity-intermediate">Intermediate</span>
+                    <h5 style="margin: 0.5rem 0;">What This Is:</h5>
+                    <p style="margin-bottom: 1rem;">Interactive dashboards that display Treasury data with charts, tables, and real-time updates. Uses Python libraries like Streamlit or Plotly for visualization.</p>
+                    
+                    <h5 style="margin: 1rem 0 0.5rem 0;">PRD Prompt to Get Started:</h5>
+                    <div class="prompt-box" style="margin-top: 0.5rem;">
+                        <button class="copy-btn" onclick="event.stopPropagation(); copyPrompt(this, 'dashboardPRD')">📋 Copy</button>
+                        <pre id="dashboardPRD">Create a PRD.md for a Treasury Yield Dashboard that:
+1. Displays 10Y, 5Y, 2Y, and 3M Treasury yields
+2. Shows yield curve spread (10Y-2Y) with visual indicator
+3. Includes a 12-month trend chart for all yields
+4. Has a data refresh button (manual for now)
+5. Displays last update timestamp
+6. Uses FRED API with API key from .env file
+7. Built with Python Streamlit for easy deployment
+8. Includes error handling for API failures
+
+Design: Clean, professional, suitable for executive viewing.
+Success Metric: Dashboard loads in under 3 seconds.</pre>
+                    </div>
+                    
+                    <h5 style="margin: 1rem 0 0.5rem 0;">Why This Works:</h5>
+                    <p style="font-size: 0.85rem; color: #64748b;">Lists specific metrics, timeframes, and technical stack. Includes performance requirements and error handling. Specifies the audience (executives) which helps AI understand design needs.</p>
+                    
+                    <h5 style="margin: 1rem 0 0.5rem 0;">Best Practices Applied:</h5>
+                    <ul style="font-size: 0.85rem; color: #64748b; margin: 0.5rem 0 0 1.5rem;">
+                        <li>Environment variables for API keys (security)</li>
+                        <li>Error handling specified upfront</li>
+                        <li>Performance metrics defined</li>
+                        <li>Technology stack chosen (Streamlit)</li>
+                        <li>Manual refresh before automation (iterate gradually)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="screenshot-card" onclick="toggleCard(this)">
                 <img src="images/peer-comparison.svg" alt="Peer Comparison">
                 <div class="card-content">
-                    <h4>Peer Group Analyzer</h4>
+                    <h4>Peer Group Analyzer <span class="expand-icon">▼</span></h4>
                     <p>Compare banks, tech companies, and financials</p>
+                </div>
+                <div class="screenshot-card-details">
+                    <span class="complexity-badge complexity-intermediate">Intermediate</span>
+                    <h5 style="margin: 0.5rem 0;">What This Is:</h5>
+                    <p style="margin-bottom: 1rem;">A tool that compares multiple companies on key financial metrics. Users can select peer groups (banks, tech, etc.) and view side-by-side comparisons with charts and export capabilities.</p>
+                    
+                    <h5 style="margin: 1rem 0 0.5rem 0;">PRD Prompt to Get Started:</h5>
+                    <div class="prompt-box" style="margin-top: 0.5rem;">
+                        <button class="copy-btn" onclick="event.stopPropagation(); copyPrompt(this, 'peerPRD')">📋 Copy</button>
+                        <pre id="peerPRD">Create a PRD.md for a Peer Group Comparison Tool that:
+1. Allows users to select from 3 peer groups:
+   - Banks: JPM, GS, BAC, C, WFC
+   - Tech: AAPL, MSFT, GOOGL, AMZN, META
+   - Diversified: BRK.B, GE, MMM, JNJ, PG
+
+2. Displays these metrics for each company:
+   - Market Cap, P/E Ratio, ROE, Dividend Yield, YTD Return
+   
+3. Features:
+   - Dropdown to select peer group
+   - Comparison table with conditional formatting (highlight best/worst)
+   - Bar chart for selected metric
+   - CSV export button
+   - Last updated timestamp
+
+4. Technical requirements:
+   - Use yfinance library for data
+   - Built with Streamlit
+   - Cache data for 1 hour to reduce API calls
+   - Handle missing data gracefully
+
+Target: Treasury analysts comparing investment options.
+Success: User can generate comparison in under 10 seconds.</pre>
+                    </div>
+                    
+                    <h5 style="margin: 1rem 0 0.5rem 0;">Why This Works:</h5>
+                    <p style="font-size: 0.85rem; color: #64748b;">Extremely specific about data structure (3 groups, 5 companies each, 5 metrics). Lists all features clearly. Includes technical optimizations (caching) and user experience requirements (10-second load time).</p>
+                    
+                    <h5 style="margin: 1rem 0 0.5rem 0;">Best Practices Applied:</h5>
+                    <ul style="font-size: 0.85rem; color: #64748b; margin: 0.5rem 0 0 1.5rem;">
+                        <li>Data caching to reduce API load (performance)</li>
+                        <li>Graceful error handling for missing data</li>
+                        <li>Export functionality for further analysis</li>
+                        <li>Conditional formatting for quick insights</li>
+                        <li>Specific company tickers listed (no ambiguity)</li>
+                    </ul>
                 </div>
             </div>
         </div>
 
         <!-- Quick Start Prompts -->
-        <h2 style="margin-top: 2rem; color: #1e293b;">🚀 Quick Start Prompts</h2>
+        <h2 id="quick-start-prompts" style="margin-top: 2rem; color: #1e293b;">
+            🚀 Quick Start Prompts 
+            <button class="help-btn" onclick="openPRDModal()" title="What is PRD.md?">?</button>
+        </h2>
         <p style="color: #64748b; margin-bottom: 1rem;">Click to copy, then paste into Windsurf Cascade</p>
         
         <div class="prompt-box">
@@ -795,7 +1019,7 @@
         <img src="images/morning-report.svg" alt="Morning Report" style="width: 100%; max-width: 800px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin: 1rem 0;">
 
         <!-- Interactive Tutorial -->
-        <div class="tutorial-container">
+        <div id="interactive-tutorial" class="tutorial-container">
             <div class="tutorial-header">
                 <h3>🎯 Interactive Exercise: Build Your First PRD</h3>
                 <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Follow along step-by-step to create a Treasury PRD using Windsurf</p>
@@ -911,7 +1135,7 @@ Include sections for:
         </div>
 
         <!-- Cascade Simulator -->
-        <h2 style="margin-top: 2rem; color: #1e293b;">🌊 Try Cascade Simulator</h2>
+        <h2 id="cascade-simulator" style="margin-top: 2rem; color: #1e293b;">🌊 Try Cascade Simulator</h2>
         <p style="color: #64748b;">Practice prompting before using the real thing. Type a prompt and see a simulated response.</p>
         
         <div class="simulation-panel">
@@ -928,8 +1152,30 @@ Include sections for:
             </div>
         </div>
 
+        <!-- Code Playground -->
+        <h2 id="prompt-playground" style="margin-top: 2rem; color: #1e293b;">🧪 Prompt Playground</h2>
+        <p style="color: #64748b;">Practice writing prompts. Edit the template below and see tips for improvement.</p>
+        
+        <div class="code-playground">
+            <div class="playground-header">
+                <div class="playground-title">
+                    <span>📝</span> Prompt Editor
+                </div>
+                <div class="playground-actions">
+                    <button class="playground-btn" onclick="resetPlayground()">Reset</button>
+                    <button class="playground-btn primary" onclick="analyzePrompt()">Analyze Prompt</button>
+                </div>
+            </div>
+            <div class="playground-editor">
+                <textarea id="playgroundInput">Create a dashboard for Treasury</textarea>
+            </div>
+            <div class="playground-output" id="playgroundOutput">
+                Click "Analyze Prompt" to get feedback on your prompt...
+            </div>
+        </div>
+
         <!-- Knowledge Quiz -->
-        <h2 style="margin-top: 2rem; color: #1e293b;">📝 Knowledge Check</h2>
+        <h2 id="knowledge-check" style="margin-top: 2rem; color: #1e293b;">📝 Knowledge Check</h2>
         
         <div class="quiz-container" id="quiz1">
             <div class="quiz-question">Q1: When should you restart a Cascade session instead of continuing to iterate?</div>
@@ -954,41 +1200,105 @@ Include sections for:
         </div>
         
         <div class="quiz-container" id="quiz3">
-            <div class="quiz-question">Q3: When should you use Flows instead of Cascade?</div>
+            <div class="quiz-question">Q3: What is the purpose of Global Rules in Windsurf?</div>
             <div class="quiz-options">
-                <div class="quiz-option" onclick="checkAnswer(this, 'quiz3', false)">For one-time exploratory tasks</div>
-                <div class="quiz-option" onclick="checkAnswer(this, 'quiz3', false)">When you need to chat interactively</div>
-                <div class="quiz-option" onclick="checkAnswer(this, 'quiz3', true)">For repeatable, scheduled multi-step processes</div>
-                <div class="quiz-option" onclick="checkAnswer(this, 'quiz3', false)">Flows and Cascade are the same thing</div>
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz3', false)">To restrict what Cascade can do</div>
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz3', true)">To set persistent preferences and coding standards that apply to all projects</div>
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz3', false)">To create automated workflows</div>
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz3', false)">To speed up code execution</div>
             </div>
             <div class="quiz-feedback" id="quiz3-feedback"></div>
         </div>
 
-        <!-- Code Playground -->
-        <h2 style="margin-top: 2rem; color: #1e293b;">🧪 Prompt Playground</h2>
-        <p style="color: #64748b;">Practice writing prompts. Edit the template below and see tips for improvement.</p>
-        
-        <div class="code-playground">
-            <div class="playground-header">
-                <div class="playground-title">
-                    <span>📝</span> Prompt Editor
-                </div>
-                <div class="playground-actions">
-                    <button class="playground-btn" onclick="resetPlayground()">Reset</button>
-                    <button class="playground-btn primary" onclick="analyzePrompt()">Analyze Prompt</button>
-                </div>
+        <div class="quiz-container" id="quiz4">
+            <div class="quiz-question">Q4: When should you use Turbo mode in Windsurf?</div>
+            <div class="quiz-options">
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz4', false)">Always - it's always better</div>
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz4', true)">For quick edits and simple coding tasks that don't need deep reasoning</div>
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz4', false)">Only when your computer is slow</div>
+                <div class="quiz-option" onclick="checkAnswer(this, 'quiz4', false)">Never - regular mode is sufficient</div>
             </div>
-            <div class="playground-editor">
-                <textarea id="playgroundInput">Create a dashboard for Treasury</textarea>
-            </div>
-            <div class="playground-output" id="playgroundOutput">
-                Click "Analyze Prompt" to get feedback on your prompt...
-            </div>
+            <div class="quiz-feedback" id="quiz4-feedback"></div>
         </div>
 
         <!-- Main Content -->
         <div class="content" id="content">
             Loading...
+        </div>
+    </div>
+    
+    <!-- PRD Modal -->
+    <div class="modal" id="prdModal" onclick="closePRDModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closePRDModal()">×</button>
+            <h2 style="color: #2563eb; margin-top: 0;">📋 What is PRD.md?</h2>
+            
+            <h3 style="color: #1e293b; margin-top: 1.5rem;">Product Requirements Document</h3>
+            <p>A <strong>PRD.md</strong> (Product Requirements Document) is a structured markdown file that clearly defines what you want to build before you start coding. Think of it as a blueprint for your project.</p>
+            
+            <h3 style="color: #1e293b; margin-top: 1.5rem;">Why Use PRD.md in Windsurf?</h3>
+            <div style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+                <p style="margin: 0;"><strong>🎯 Key Benefit:</strong> AI assistants like Cascade work dramatically better when they understand your complete requirements upfront.</p>
+            </div>
+            
+            <h4 style="color: #1e293b; margin-top: 1rem;">Without PRD.md:</h4>
+            <ul style="color: #64748b;">
+                <li>Vague prompts lead to unpredictable results</li>
+                <li>Constant back-and-forth clarifications</li>
+                <li>AI "forgets" earlier requirements</li>
+                <li>More iterations = more frustration</li>
+                <li>Higher chance of needing to restart</li>
+            </ul>
+            
+            <h4 style="color: #1e293b; margin-top: 1rem;">With PRD.md:</h4>
+            <ul style="color: #22c55e;">
+                <li>✓ Clear, documented requirements</li>
+                <li>✓ AI understands the full context</li>
+                <li>✓ Consistent results across iterations</li>
+                <li>✓ Easy to share with team members</li>
+                <li>✓ Serves as project documentation</li>
+            </ul>
+            
+            <h3 style="color: #1e293b; margin-top: 1.5rem;">The PRD-First Workflow</h3>
+            <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                <ol style="margin: 0; padding-left: 1.5rem;">
+                    <li style="margin: 0.5rem 0;"><strong>Chat First</strong> - Discuss your idea with Cascade to refine it</li>
+                    <li style="margin: 0.5rem 0;"><strong>Build PRD.md</strong> - Document requirements, data sources, success metrics</li>
+                    <li style="margin: 0.5rem 0;"><strong>Implement</strong> - Let Windsurf build from your clear specifications</li>
+                    <li style="margin: 0.5rem 0;"><strong>Iterate</strong> - Update PRD.md as requirements evolve</li>
+                </ol>
+            </div>
+            
+            <h3 style="color: #1e293b; margin-top: 1.5rem;">What Goes in a PRD.md?</h3>
+            <div style="background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.9rem; margin: 1rem 0;">
+                <div># Project Name</div>
+                <div style="margin-top: 0.5rem;">## Executive Summary</div>
+                <div>Brief overview of what you're building</div>
+                <div style="margin-top: 0.5rem;">## Requirements</div>
+                <div>- Feature 1: Description</div>
+                <div>- Feature 2: Description</div>
+                <div style="margin-top: 0.5rem;">## Data Sources</div>
+                <div>- FRED API for Treasury yields</div>
+                <div>- Yahoo Finance for stock data</div>
+                <div style="margin-top: 0.5rem;">## Success Metrics</div>
+                <div>- Dashboard loads in &lt;3 seconds</div>
+                <div>- Displays accurate real-time data</div>
+            </div>
+            
+            <h3 style="color: #1e293b; margin-top: 1.5rem;">Best Practices</h3>
+            <ul style="color: #64748b;">
+                <li><strong>Be Specific:</strong> "Create a table with 5 columns" beats "make a table"</li>
+                <li><strong>List Constraints:</strong> API limits, performance requirements, security needs</li>
+                <li><strong>Define Success:</strong> How will you know it's done correctly?</li>
+                <li><strong>Include Examples:</strong> Show sample data or mockups when possible</li>
+                <li><strong>Update as You Go:</strong> PRD.md is a living document</li>
+            </ul>
+            
+            <div style="background: #dcfce7; border-left: 4px solid #22c55e; padding: 1rem; margin: 1.5rem 0; border-radius: 4px;">
+                <p style="margin: 0; color: #166534;"><strong>💡 Pro Tip:</strong> Start every Windsurf project by asking Cascade to help you create a PRD.md. This 5-minute investment saves hours of rework later.</p>
+            </div>
+            
+            <button class="windsurf-btn" onclick="closePRDModal()" style="margin-top: 1rem;">Got it! Let's build with PRD.md</button>
         </div>
     </div>
     
@@ -1146,8 +1456,12 @@ Include sections for:
                     incorrect: 'Vague prompts lead to unpredictable output. Always specify exactly what you need.'
                 },
                 'quiz3': {
-                    correct: 'Flows are designed for automation - tasks that run on a schedule or need to be repeated consistently.',
-                    incorrect: 'Cascade is for interactive, one-time tasks. Flows are for automated, repeatable workflows.'
+                    correct: 'Global Rules let you set preferences like coding style, naming conventions, and best practices that Cascade will follow across all your projects.',
+                    incorrect: 'Global Rules are persistent settings that help maintain consistency in your code. They apply to all projects and help Cascade understand your preferences.'
+                },
+                'quiz4': {
+                    correct: 'Turbo mode is faster but uses a lighter model. Use it for straightforward edits, but switch to regular mode for complex problem-solving.',
+                    incorrect: 'Turbo mode trades some reasoning depth for speed. It\'s great for simple tasks but regular mode is better for complex architecture and debugging.'
                 }
             };
             return explanations[quizId][isCorrect ? 'correct' : 'incorrect'];
@@ -1366,6 +1680,25 @@ What would you like to create?`
         }
         
         document.addEventListener('DOMContentLoaded', loadTutorialProgress);
+        
+        // Toggle screenshot card expansion
+        function toggleCard(card) {
+            card.classList.toggle('expanded');
+        }
+        
+        // PRD Modal functions
+        function openPRDModal() {
+            document.getElementById('prdModal').classList.add('show');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+        
+        function closePRDModal(event) {
+            // Only close if clicking the backdrop or close button
+            if (!event || event.target.id === 'prdModal' || event.target.classList.contains('modal-close')) {
+                document.getElementById('prdModal').classList.remove('show');
+                document.body.style.overflow = 'auto'; // Restore scrolling
+            }
+        }
     </script>
 </body>
 </html>
