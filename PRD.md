@@ -10,9 +10,9 @@
 
 ## 1. Executive Summary
 
-This self-paced course empowers Treasury professionals to become internal champions for AI coding assistants. Participants will learn to use Windsurf (Cascade and Flows) to build dashboards, automate reports, analyze peer companies, and create their own PRD.md files—skills they can then teach to colleagues across the organization.
+This self-paced course empowers Financial professionals to become internal champions for AI coding assistants. Participants will learn to use Windsurf (Cascade and Flows) to build dashboards, automate reports, analyze peer companies, and create their own PRD.md files—skills they can then teach to colleagues across the organization.
 
-**Target Audience:** Treasury executives and senior analysts who will train others  
+**Target Audience:** Financial executives and senior analysts who will train others  
 **Business Outcome:** Accelerate AI adoption, reduce manual work, improve decision-making speed  
 **ROI Drivers:** Time savings, error reduction, faster insights, scalable training
 
@@ -504,7 +504,7 @@ Report generated: 2026-02-04 07:00:00 EST
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    TREASURY EXECUTIVE DASHBOARD             │
+│                    FINANCIAL EXECUTIVE DASHBOARD            │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  KEY METRICS                           ALERTS               │
