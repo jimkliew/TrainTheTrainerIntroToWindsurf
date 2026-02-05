@@ -4,7 +4,6 @@
 
 **Version:** 1.0  
 **Date:** February 4, 2026  
-**Author:** Treasury Innovation Team  
 **Repository:** github.com/jimkliew/buildBestPracticesStartsInWindsurf
 
 ---
