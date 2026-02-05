@@ -1,6 +1,6 @@
 # Train the Trainer: AI Coding Assistants for Treasury
 
-A self-paced course that empowers Treasury professionals to become internal champions for AI coding assistants like Windsurf.
+A self-paced course that empowers students and finance professionals to become internal champions for AI coding assistants like Windsurf.
 
 ## 🎯 Course Overview
 
